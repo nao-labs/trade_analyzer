@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Analysis Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="dataProcessing.js"></script>
+    <script defer src="symbolAnalysis.js"></script>
+    <script defer src="analytics.js"></script>
+    <script defer src="uiInteractions.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Trading Performance Dashboard</h1>
+            <p class="subtitle">Analyze your complete trading history with precision</p>
+            <div class="header-controls">
+                <button class="dark-mode-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+            </div>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <!-- Upload interface will be dynamically generated -->
+        </div>
+        
+        <div class="dashboard" id="dashboard">
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+                <button class="tab-btn" data-tab="symbols">📋 Symbols</button>
+                <button class="tab-btn" data-tab="analytics">📈 Analytics</button>
+            </div>
+            
+            <!-- Overview Tab -->
+            <div class="tab-content active" id="overviewTab">
+                <!-- Performance Metrics -->
+                <div class="metrics-row" id="metricsRow">
+                    <!-- Metrics will be populated here -->
+                </div>
+                
+                <!-- Calendar Section -->
+                <div class="section">
+                    <h3 class="section-title">📅 Daily Performance Calendar</h3>
+                    <div class="status-info" id="calendarStatus">Loading calendar...</div>
+                    <div class="calendar-controls">
+                        <label for="calendarSort">Sort Calendar By:</label>
+                        <select id="calendarSort" onchange="updateCalendarSort()">
+                            <option value="closeTime">Close Time</option>
+                            <option value="buyTime">Buy Time</option>
+                        </select>
+                        <button onclick="toggleSortOrder()">Toggle Order (Current: Descending)</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Calendar will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Trades Section -->
+                <div class="section">
+                    <h3 class="section-title">📊 Trade History</h3>
+                    <div class="status-info" id="tradesStatus">Loading trades...</div>
+                    <div id="tradesControls"></div>
+                    <div class="trades-section">
+                        <div id="tradesContainer">
+                            <!-- Trades will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Symbols Tab -->
+            <div class="tab-content" id="symbolsTab">
+                <div class="symbols-grid" id="symbolsGrid">
+                    <!-- Symbols analysis will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Analytics Tab -->
+            <div class="tab-content" id="analyticsTab">
+                <div class="analytics-grid" id="analyticsGrid">
+                    <!-- Analytics will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

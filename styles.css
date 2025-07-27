@@ -905,7 +905,7 @@ body.dark-mode .symbols-controls select {
     overflow-x: hidden;
     margin: -5px;
     padding: 5px;
-    max-height: calc(70vh - 120px);
+    /*max-height: calc(70vh - 120px);*/
     scrollbar-width: thin;
     scrollbar-color: #c1c1c1 #f1f1f1;
 }

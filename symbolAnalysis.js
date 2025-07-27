@@ -118,74 +118,91 @@ function generateSymbolAnalysis() {
     // Display the analysis
     displaySymbolAnalysis();
 }
-
-// Display the symbol analysis interface
-function displaySymbolAnalysis() {
-    console.log('🖼️ Displaying symbol analysis interface...');
+// Display charts for selected symbol
+function displaySymbolCharts(symbolInfo) {
+    const symbolCharts = document.getElementById('symbolCharts');
+    if (!symbolCharts) return;
     
-    const symbolsGrid = document.getElementById('symbolsGrid');
-    if (!symbolsGrid) {
-        console.error('❌ symbolsGrid element not found');
-        return;
-    }
+    symbolCharts.style.display = 'block';
     
-    // Sort symbols by most recent buy date by default
-    const sortedSymbols = Object.values(symbolsData).sort((a, b) => {
-        const dateA = a.mostRecentBuyDate || new Date(0);
-        const dateB = b.mostRecentBuyDate || new Date(0);
-        return dateB - dateA;
+    // Prepare data for charts - we need both open and close events
+    const events = [];
+    
+    // Create events for each trade (open and close)
+    symbolInfo.trades.forEach(trade => {
+        const openDate = new Date(trade.Open_Time);
+        const closeDate = trade.Close_Time ? new Date(trade.Close_Time) : null;
+        const positionSize = parseFloat(trade.Position_Size_USD) || 0;
+        const pnl = parseFloat(trade.Total_Profit) || 0;
+        
+        if (!isNaN(openDate.getTime())) {
+            // Add open event
+            events.push({
+                date: openDate,
+                type: 'open',
+                positionSize: positionSize,
+                pnl: 0, // No P&L at open
+                trade: trade
+            });
+            
+            // Add close event if trade is closed
+            if (closeDate && !isNaN(closeDate.getTime())) {
+                events.push({
+                    date: closeDate,
+                    type: 'close',
+                    positionSize: -positionSize, // Negative to reduce open position
+                    pnl: pnl,
+                    trade: trade
+                });
+            }
+        }
     });
     
-    symbolsGrid.innerHTML = `
-        <div class="symbols-container">
-            <div class="symbols-sidebar">
-                <div class="symbols-header">
-                    <h3>📈 Symbols (${sortedSymbols.length})</h3>
-                    <div class="symbols-controls">
-                        <input type="text" id="symbolFilter" placeholder="Filter symbols..." onkeyup="window.filterSymbols()" class="symbol-filter-input">
-                        <select id="symbolSort" onchange="window.sortSymbols()">
-                            <option value="recentBuy" selected>Sort by Most Recent Buy</option>
-                            <option value="pnl">Sort by P&L</option>
-                            <option value="trades">Sort by Trade Count</option>
-                            <option value="winRate">Sort by Win Rate</option>
-                            <option value="oldestBuy">Sort by Oldest Buy</option>
-                            <option value="symbol">Sort Alphabetically</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="symbols-list" id="symbolsList">
-                    ${sortedSymbols.map(symbol => createSymbolItem(symbol)).join('')}
-                </div>
-            </div>
-            
-            <div class="symbol-details">
-                <div class="symbol-details-header">
-                    <h3 id="symbolDetailsTitle">Select a symbol to view trades</h3>
-                </div>
-                <div class="symbol-metrics" id="symbolMetrics" style="display: none;">
-                </div>
-                <div class="symbol-charts" id="symbolCharts" style="display: none;">
-                    <div class="charts-row">
-                        <div class="chart-container">
-                            <h4>Cumulative P&L Over Time</h4>
-                            <canvas id="cumulativePnlChart"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <h4>Cumulative Position Size Over Time</h4>
-                            <canvas id="cumulativeSizeChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="symbol-trades" id="symbolTrades">
-                    <div class="empty-state">
-                        <p>👈 Click on a symbol from the left to see its trades</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+    // Sort events by date
+    events.sort((a, b) => a.date - b.date);
     
-    console.log('✅ Symbol analysis interface displayed');
+    // Calculate running totals
+    let cumulativePnl = 0;
+    let openPositionSize = 0; // This tracks actual open positions
+    
+    const chartData = events.map(event => {
+        if (event.type === 'open') {
+            openPositionSize += event.positionSize;
+        } else if (event.type === 'close') {
+            openPositionSize += event.positionSize; // This is negative, so it reduces
+            cumulativePnl += event.pnl;
+        }
+        
+        return {
+            date: event.date.toLocaleDateString(),
+            dateTime: event.date,
+            cumulativePnl: cumulativePnl,
+            openPositionSize: Math.max(0, openPositionSize), // Ensure non-negative
+            eventType: event.type,
+            tradePnl: event.pnl
+        };
+    });
+    
+    // Remove duplicate dates by keeping the last event for each date
+    const consolidatedData = [];
+    const dateMap = new Map();
+    
+    chartData.forEach(point => {
+        const dateKey = point.date;
+        if (!dateMap.has(dateKey) || point.dateTime > dateMap.get(dateKey).dateTime) {
+            dateMap.set(dateKey, point);
+        }
+    });
+    
+    // Convert map back to array and sort
+    dateMap.forEach(point => consolidatedData.push(point));
+    consolidatedData.sort((a, b) => a.dateTime - b.dateTime);
+    
+    // Render cumulative P&L chart
+    renderCumulativePnlChart(consolidatedData, symbolInfo.symbol);
+    
+    // Render open position size chart (instead of cumulative)
+    renderOpenPositionChart(consolidatedData, symbolInfo.symbol);
 }
 
 // Create HTML for individual symbol item
@@ -424,6 +441,93 @@ function renderCumulativeSizeChart(chartData, symbol) {
         }
     });
 }
+
+
+// New function to render open position chart
+function renderOpenPositionChart(chartData, symbol) {
+    const ctx = document.getElementById('cumulativeSizeChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart if it exists
+    if (window.cumulativeSizeChartInstance) {
+        window.cumulativeSizeChartInstance.destroy();
+    }
+    
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const textColor = isDarkMode ? '#e2e8f0' : '#2c3e50';
+    const gridColor = isDarkMode ? '#4a5568' : '#e9ecef';
+    
+    window.cumulativeSizeChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.map(d => d.date),
+            datasets: [
+                {
+                    label: 'Open Position Size ($)',
+                    data: chartData.map(d => d.openPositionSize),
+                    borderColor: '#20c997',
+                    backgroundColor: 'rgba(32, 201, 151, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    stepped: true // This makes it look like a step chart, better for position tracking
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: textColor }
+                },
+                title: {
+                    display: true,
+                    text: `${symbol} - Open Position Size Over Time`,
+                    color: textColor
+                },
+                tooltip: {
+                    callbacks: {
+                        afterBody: function(context) {
+                            const dataPoint = chartData[context[0].dataIndex];
+                            return [
+                                `Event: ${dataPoint.eventType === 'open' ? 'Position Opened' : 'Position Closed'}`,
+                                `Open Positions: $${Math.round(dataPoint.openPositionSize).toLocaleString()}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Open Position Size ($)', color: textColor },
+                    grid: { color: gridColor },
+                    ticks: { 
+                        color: textColor,
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                },
+                x: {
+                    title: { display: true, text: 'Date', color: textColor },
+                    grid: { color: gridColor },
+                    ticks: { 
+                        color: textColor,
+                        maxTicksLimit: 10
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+}
+
 function displaySymbolMetrics(symbolInfo) {
     const symbolMetrics = document.getElementById('symbolMetrics');
     if (!symbolMetrics) return;

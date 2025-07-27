@@ -118,6 +118,140 @@ function generateSymbolAnalysis() {
     // Display the analysis
     displaySymbolAnalysis();
 }
+
+// Display the symbol analysis interface
+function displaySymbolAnalysis() {
+    console.log('🖼️ Displaying symbol analysis interface...');
+    
+    const symbolsGrid = document.getElementById('symbolsGrid');
+    if (!symbolsGrid) {
+        console.error('❌ symbolsGrid element not found');
+        return;
+    }
+    
+    // Sort symbols by most recent buy date by default
+    const sortedSymbols = Object.values(symbolsData).sort((a, b) => {
+        const dateA = a.mostRecentBuyDate || new Date(0);
+        const dateB = b.mostRecentBuyDate || new Date(0);
+        return dateB - dateA;
+    });
+    
+    symbolsGrid.innerHTML = `
+        <div class="symbols-container">
+            <div class="symbols-sidebar">
+                <div class="symbols-header">
+                    <h3>📈 Symbols (${sortedSymbols.length})</h3>
+                    <div class="symbols-controls">
+                        <input type="text" id="symbolFilter" placeholder="Filter symbols..." onkeyup="window.filterSymbols()" class="symbol-filter-input">
+                        <select id="symbolSort" onchange="window.sortSymbols()">
+                            <option value="recentBuy" selected>Sort by Most Recent Buy</option>
+                            <option value="pnl">Sort by P&L</option>
+                            <option value="trades">Sort by Trade Count</option>
+                            <option value="winRate">Sort by Win Rate</option>
+                            <option value="oldestBuy">Sort by Oldest Buy</option>
+                            <option value="symbol">Sort Alphabetically</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="symbols-list" id="symbolsList">
+                    ${sortedSymbols.map(symbol => createSymbolItem(symbol)).join('')}
+                </div>
+            </div>
+            
+            <div class="symbol-details">
+                <div class="symbol-details-header">
+                    <h3 id="symbolDetailsTitle">Select a symbol to view trades</h3>
+                </div>
+                <div class="symbol-metrics" id="symbolMetrics" style="display: none;">
+                </div>
+                <div class="symbol-charts" id="symbolCharts" style="display: none;">
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h4>Cumulative P&L Over Time</h4>
+                            <canvas id="cumulativePnlChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Open Position Size Over Time</h4>
+                            <canvas id="cumulativeSizeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="symbol-trades" id="symbolTrades">
+                    <div class="empty-state">
+                        <p>👈 Click on a symbol from the left to see its trades</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    console.log('✅ Symbol analysis interface displayed');
+}
+
+// Create HTML for individual symbol item
+function createSymbolItem(symbolInfo) {
+    const pnlClass = symbolInfo.totalPnL >= 0 ? 'positive' : 'negative';
+    const instrumentTypesText = Array.from(symbolInfo.instrumentTypes).join(', ') || 'Stock';
+    const recentBuyText = symbolInfo.mostRecentBuyDate ? 
+        symbolInfo.mostRecentBuyDate.toLocaleDateString() : 'No trades';
+    
+    // Escape symbol name for onclick
+    const escapedSymbol = symbolInfo.symbol.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    
+    return `
+        <div class="symbol-item" data-symbol="${symbolInfo.symbol}" onclick="window.selectSymbol('${escapedSymbol}')">
+            <div class="symbol-main">
+                <div class="symbol-name">${symbolInfo.symbol}</div>
+                <div class="symbol-pnl ${pnlClass}">
+                    ${symbolInfo.totalPnL >= 0 ? '+' : ''}$${Math.round(symbolInfo.totalPnL).toLocaleString()}
+                </div>
+            </div>
+            <div class="symbol-stats">
+                <span class="symbol-trades-count">${symbolInfo.totalTrades} trades</span>
+                <span class="symbol-win-rate">${symbolInfo.winRate.toFixed(1)}% win</span>
+                <span class="symbol-recent-date">Last: ${recentBuyText}</span>
+                <span class="symbol-types">${instrumentTypesText}</span>
+            </div>
+        </div>
+    `;
+}
+
+// Select and display details for a symbol
+function selectSymbol(symbol) {
+    console.log(`🎯 Selecting symbol: ${symbol}`);
+    
+    // Update UI selection
+    document.querySelectorAll('.symbol-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    const selectedElement = document.querySelector(`[data-symbol="${symbol}"]`);
+    if (selectedElement) {
+        selectedElement.classList.add('selected');
+    }
+    
+    selectedSymbol = symbol;
+    const symbolInfo = symbolsData[symbol];
+    
+    if (!symbolInfo) {
+        console.error(`❌ Symbol data not found: ${symbol}`);
+        return;
+    }
+    
+    // Update title
+    const titleElement = document.getElementById('symbolDetailsTitle');
+    if (titleElement) {
+        titleElement.textContent = `${symbol} Trading History`;
+    }
+    
+    // Display metrics, charts, and trades
+    displaySymbolMetrics(symbolInfo);
+    displaySymbolCharts(symbolInfo);
+    displaySymbolTrades(symbolInfo);
+    
+    console.log(`✅ Symbol ${symbol} selected and displayed`);
+}
+
 // Display charts for selected symbol
 function displaySymbolCharts(symbolInfo) {
     const symbolCharts = document.getElementById('symbolCharts');
@@ -205,107 +339,6 @@ function displaySymbolCharts(symbolInfo) {
     renderOpenPositionChart(consolidatedData, symbolInfo.symbol);
 }
 
-// Create HTML for individual symbol item
-function createSymbolItem(symbolInfo) {
-    const pnlClass = symbolInfo.totalPnL >= 0 ? 'positive' : 'negative';
-    const instrumentTypesText = Array.from(symbolInfo.instrumentTypes).join(', ') || 'Stock';
-    const recentBuyText = symbolInfo.mostRecentBuyDate ? 
-        symbolInfo.mostRecentBuyDate.toLocaleDateString() : 'No trades';
-    
-    // Escape symbol name for onclick
-    const escapedSymbol = symbolInfo.symbol.replace(/'/g, "\\'").replace(/"/g, '\\"');
-    
-    return `
-        <div class="symbol-item" data-symbol="${symbolInfo.symbol}" onclick="window.selectSymbol('${escapedSymbol}')">
-            <div class="symbol-main">
-                <div class="symbol-name">${symbolInfo.symbol}</div>
-                <div class="symbol-pnl ${pnlClass}">
-                    ${symbolInfo.totalPnL >= 0 ? '+' : ''}$${Math.round(symbolInfo.totalPnL).toLocaleString()}
-                </div>
-            </div>
-            <div class="symbol-stats">
-                <span class="symbol-trades-count">${symbolInfo.totalTrades} trades</span>
-                <span class="symbol-win-rate">${symbolInfo.winRate.toFixed(1)}% win</span>
-                <span class="symbol-recent-date">Last: ${recentBuyText}</span>
-                <span class="symbol-types">${instrumentTypesText}</span>
-            </div>
-        </div>
-    `;
-}
-
-// Select and display details for a symbol
-function selectSymbol(symbol) {
-    console.log(`🎯 Selecting symbol: ${symbol}`);
-    
-    // Update UI selection
-    document.querySelectorAll('.symbol-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-    
-    const selectedElement = document.querySelector(`[data-symbol="${symbol}"]`);
-    if (selectedElement) {
-        selectedElement.classList.add('selected');
-    }
-    
-    selectedSymbol = symbol;
-    const symbolInfo = symbolsData[symbol];
-    
-    if (!symbolInfo) {
-        console.error(`❌ Symbol data not found: ${symbol}`);
-        return;
-    }
-    
-    // Update title
-    const titleElement = document.getElementById('symbolDetailsTitle');
-    if (titleElement) {
-        titleElement.textContent = `${symbol} Trading History`;
-    }
-    
-    // Display metrics, charts, and trades
-    displaySymbolMetrics(symbolInfo);
-    displaySymbolCharts(symbolInfo);
-    displaySymbolTrades(symbolInfo);
-    
-    console.log(`✅ Symbol ${symbol} selected and displayed`);
-}
-
-// Display charts for selected symbol
-function displaySymbolCharts(symbolInfo) {
-    const symbolCharts = document.getElementById('symbolCharts');
-    if (!symbolCharts) return;
-    
-    symbolCharts.style.display = 'block';
-    
-    // Prepare data for charts - sort trades by close date
-    const sortedTrades = [...symbolInfo.trades].sort((a, b) => {
-        const dateA = new Date(a.Close_Time || a.Open_Time);
-        const dateB = new Date(b.Close_Time || b.Open_Time);
-        return dateA - dateB; // Oldest first for cumulative calculation
-    });
-    
-    let cumulativePnl = 0;
-    let cumulativeSize = 0;
-    
-    const chartData = sortedTrades.map(trade => {
-        cumulativePnl += parseFloat(trade.Total_Profit) || 0;
-        cumulativeSize += parseFloat(trade.Position_Size_USD) || 0;
-        
-        const date = new Date(trade.Close_Time || trade.Open_Time);
-        return {
-            date: date.toLocaleDateString(),
-            cumulativePnl: cumulativePnl,
-            cumulativeSize: cumulativeSize,
-            tradePnl: parseFloat(trade.Total_Profit) || 0
-        };
-    });
-    
-    // Render cumulative P&L chart
-    renderCumulativePnlChart(chartData, symbolInfo.symbol);
-    
-    // Render cumulative size chart
-    renderCumulativeSizeChart(chartData, symbolInfo.symbol);
-}
-
 // Render cumulative P&L chart
 function renderCumulativePnlChart(chartData, symbol) {
     const ctx = document.getElementById('cumulativePnlChart');
@@ -373,75 +406,6 @@ function renderCumulativePnlChart(chartData, symbol) {
         }
     });
 }
-
-// Render cumulative size chart
-function renderCumulativeSizeChart(chartData, symbol) {
-    const ctx = document.getElementById('cumulativeSizeChart');
-    if (!ctx) return;
-    
-    // Destroy existing chart if it exists
-    if (window.cumulativeSizeChartInstance) {
-        window.cumulativeSizeChartInstance.destroy();
-    }
-    
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    const textColor = isDarkMode ? '#e2e8f0' : '#2c3e50';
-    const gridColor = isDarkMode ? '#4a5568' : '#e9ecef';
-    
-    window.cumulativeSizeChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartData.map(d => d.date),
-            datasets: [
-                {
-                    label: 'Cumulative Position Size ($)',
-                    data: chartData.map(d => d.cumulativeSize),
-                    borderColor: '#20c997',
-                    backgroundColor: 'rgba(32, 201, 151, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 3,
-                    pointHoverRadius: 6
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    labels: { color: textColor }
-                },
-                title: {
-                    display: true,
-                    text: `${symbol} - Cumulative Position Size Over Time`,
-                    color: textColor
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: { display: true, text: 'Cumulative Position Size ($)', color: textColor },
-                    grid: { color: gridColor },
-                    ticks: { color: textColor }
-                },
-                x: {
-                    title: { display: true, text: 'Trade Date', color: textColor },
-                    grid: { color: gridColor },
-                    ticks: { 
-                        color: textColor,
-                        maxTicksLimit: 10
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        }
-    });
-}
-
 
 // New function to render open position chart
 function renderOpenPositionChart(chartData, symbol) {
@@ -721,6 +685,21 @@ function createSymbolTradeRow(trade) {
     `;
 }
 
+// Filter symbols function
+function filterSymbols() {
+    const filterText = document.getElementById('symbolFilter')?.value?.toLowerCase() || '';
+    const symbolItems = document.querySelectorAll('.symbol-item');
+    
+    symbolItems.forEach(item => {
+        const symbolName = item.querySelector('.symbol-name')?.textContent?.toLowerCase() || '';
+        if (symbolName.includes(filterText)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
 // Sort trades within a symbol
 function sortSymbolTrades(symbol) {
     const sortBy = document.getElementById('symbolTradesSort')?.value || 'closeDate';
@@ -859,6 +838,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.selectSymbol = selectSymbol;
     window.sortSymbols = sortSymbols;
     window.sortSymbolTrades = sortSymbolTrades;
+    window.filterSymbols = filterSymbols;
 });
 
 console.log('✅ Fresh symbol analysis script loaded successfully');

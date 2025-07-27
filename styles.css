@@ -1385,7 +1385,7 @@ body.dark-mode .price-value {
     }
     
     .symbols-list {
-        max-height: calc(350px - 120px);
+        /*max-height: calc(350px - 120px);*/
     }
     
     .symbol-trades-table-header,

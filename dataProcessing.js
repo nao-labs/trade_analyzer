@@ -138,6 +138,25 @@ function initializeFileHandling() {
             .load-file-btn:hover {
                 background: #218838;
             }
+            #uploadNewDataBtn {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                padding: 10px 20px;
+                font-size: 0.9em;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            }
+            #uploadNewDataBtn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            }
         `;
         document.head.appendChild(style);
     }
@@ -363,7 +382,74 @@ function analyzeData() {
     console.log(`📊 Analyzed ${Object.keys(dailyData).length} trading days`);
 }
 
+// Hide upload elements after data is loaded
+function hideUploadElements() {
+    // Hide the upload area
+    const uploadArea = document.getElementById('uploadArea');
+    if (uploadArea) {
+        uploadArea.classList.add('hidden');
+    }
+    
+    // Hide the header
+    const header = document.querySelector('.header');
+    if (header) {
+        header.classList.add('hidden');
+    }
+    
+    console.log('✅ Upload elements hidden after data load');
+}
+
+// Show upload elements again (useful for "Upload New Data" functionality)
+function showUploadElements() {
+    const uploadArea = document.getElementById('uploadArea');
+    if (uploadArea) {
+        uploadArea.classList.remove('hidden');
+    }
+    
+    const header = document.querySelector('.header');
+    if (header) {
+        header.classList.remove('hidden');
+    }
+    
+    // Hide dashboard
+    const dashboard = document.getElementById('dashboard');
+    if (dashboard) {
+        dashboard.style.display = 'none';
+    }
+    
+    // Remove upload new data button
+    const uploadBtn = document.getElementById('uploadNewDataBtn');
+    if (uploadBtn) {
+        uploadBtn.remove();
+    }
+    
+    // Reset data
+    allTrades = [];
+    dailyData = {};
+    
+    console.log('✅ Upload elements shown for new data upload');
+}
+
+// Add a "Upload New Data" button to the dashboard
+function addUploadNewDataButton() {
+    // Only add if it doesn't exist and we have data
+    if (!document.getElementById('uploadNewDataBtn') && allTrades.length > 0) {
+        const uploadBtn = document.createElement('button');
+        uploadBtn.id = 'uploadNewDataBtn';
+        uploadBtn.textContent = '📁 Upload New Data';
+        uploadBtn.onclick = showUploadElements;
+        
+        document.body.appendChild(uploadBtn);
+    }
+}
+
 function displayDashboard() {
+    // Hide upload elements when dashboard is shown
+    hideUploadElements();
+    
+    // Add upload new data button
+    addUploadNewDataButton();
+    
     document.getElementById('dashboard').style.display = 'block';
     
     displayMetrics();

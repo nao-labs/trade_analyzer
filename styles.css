@@ -62,7 +62,23 @@
         text-overflow: unset;
         overflow: visible;
     }
-}* {
+    
+    .symbols-sidebar {
+        max-width: none;
+        padding: 15px;
+    }
+    
+    .symbols-list {
+        max-height: 300px;
+    }
+    
+    .symbols-container {
+        gap: 15px;
+        min-height: auto;
+    }
+}
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -98,6 +114,15 @@ body.dark-mode {
 body.dark-mode .header {
     background: #2d3748;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+/* Hide upload area and header after data is loaded */
+.upload-area.hidden {
+    display: none;
+}
+
+.header.hidden {
+    display: none;
 }
 
 .header h1 {
@@ -813,8 +838,7 @@ body.dark-mode .spinner {
     display: grid;
     grid-template-columns: 400px 1fr;
     gap: 20px;
-    height: 70vh;
-    max-height: 800px;
+    min-height: 600px;
 }
 
 .symbols-sidebar {
@@ -824,8 +848,7 @@ body.dark-mode .spinner {
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
+    max-width: 400px;
 }
 
 body.dark-mode .symbols-sidebar {
@@ -905,7 +928,7 @@ body.dark-mode .symbols-controls select {
     overflow-x: hidden;
     margin: -5px;
     padding: 5px;
-    /*max-height: calc(70vh - 120px);*/
+    max-height: 500px;
     scrollbar-width: thin;
     scrollbar-color: #c1c1c1 #f1f1f1;
 }
@@ -1129,6 +1152,19 @@ body.dark-mode .chart-container h4 {
     
     .chart-container canvas {
         height: 230px !important;
+    }
+    
+    .symbols-container {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+    
+    .symbols-sidebar {
+        max-width: none;
+    }
+    
+    .symbols-list {
+        max-height: 400px;
     }
 }
 
@@ -1369,35 +1405,6 @@ body.dark-mode .price-value {
     .contract-name {
         max-width: 155px;
         font-size: 0.85em;
-    }
-}
-
-@media (max-width: 1200px) {
-    .symbols-container {
-        grid-template-columns: 1fr;
-        height: auto;
-        max-height: none;
-    }
-    
-    .symbols-sidebar {
-        height: 350px;
-        min-height: 350px;
-    }
-    
-    .symbols-list {
-        /*max-height: calc(350px - 120px);*/
-    }
-    
-    .symbol-trades-table-header,
-    .symbol-trade-row {
-        grid-template-columns: 90px 90px 140px 75px 75px 100px 65px 80px 65px 65px;
-        gap: 8px;
-        font-size: 0.8em;
-    }
-    
-    .contract-name {
-        max-width: 135px;
-        font-size: 0.8em;
     }
 }
 

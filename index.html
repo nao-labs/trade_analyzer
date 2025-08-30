@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trading Analysis Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="summary.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="dataProcessing.js"></script>
     <script defer src="symbolAnalysis.js"></script>
     <script defer src="analytics.js"></script>
+    <script defer src="summaryChart.js"></script>
     <script defer src="uiInteractions.js"></script>
 </head>
 <body>
@@ -28,9 +30,10 @@
         <div class="dashboard" id="dashboard">
             <!-- Tab Navigation -->
             <div class="tab-nav">
-                <button class="tab-btn active" data-tab="overview">📊 Overview</button>
-                <button class="tab-btn" data-tab="symbols">📋 Symbols</button>
-                <button class="tab-btn" data-tab="analytics">📈 Analytics</button>
+                <button class="tab-btn active" data-tab="overview">Overview</button>
+                <button class="tab-btn" data-tab="summary">Summary</button>
+                <button class="tab-btn" data-tab="symbols">Symbols</button>
+                <button class="tab-btn" data-tab="analytics">Analytics</button>
             </div>
             
             <!-- Overview Tab -->
@@ -42,7 +45,7 @@
                 
                 <!-- Calendar Section -->
                 <div class="section">
-                    <h3 class="section-title">📅 Daily Performance Calendar</h3>
+                    <h3 class="section-title">Daily Performance Calendar</h3>
                     <div class="status-info" id="calendarStatus">Loading calendar...</div>
                     <div class="calendar-controls">
                         <label for="calendarSort">Sort Calendar By:</label>
@@ -59,7 +62,7 @@
                 
                 <!-- Trades Section -->
                 <div class="section">
-                    <h3 class="section-title">📊 Trade History</h3>
+                    <h3 class="section-title">Trade History</h3>
                     <div class="status-info" id="tradesStatus">Loading trades...</div>
                     <div id="tradesControls"></div>
                     <div class="trades-section">
@@ -68,6 +71,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Summary Tab -->
+            <div class="tab-content" id="summaryTab">
+                <!-- Summary content will be populated here -->
             </div>
             
             <!-- Symbols Tab -->

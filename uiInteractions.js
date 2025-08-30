@@ -1,6 +1,7 @@
 let selectedDate = null;
 let sortOrder = 'desc';
 let analyticsGenerated = false;
+let summaryGenerated = false;
 let currentTradesData = [];
 let currentPage = 1;
 let currentPerPage = 50;
@@ -39,6 +40,11 @@ function showTab(tabName) {
     if (tabName === 'analytics' && allTrades.length > 0 && !analyticsGenerated) {
         generateAnalytics();
         analyticsGenerated = true;
+    }
+    
+    if (tabName === 'summary' && allTrades.length > 0 && !summaryGenerated) {
+        generateSummaryChart();
+        summaryGenerated = true;
     }
     
     if (tabName === 'symbols' && allTrades.length > 0) {
@@ -179,7 +185,7 @@ function displayTradesForDate(dateKey) {
     const tradesControls = document.getElementById('tradesControls');
     
     tradesStatus.innerHTML = `
-        📅 ${new Date(dateKey).toLocaleDateString()} - 
+        ${new Date(dateKey).toLocaleDateString()} - 
         ${dayData.trades} trades, 
         ${dayData.pnl >= 0 ? '+' : ''}$${Math.round(dayData.pnl).toLocaleString()} P&L
     `;
@@ -446,6 +452,15 @@ function updateCharts() {
         });
         if (typeof renderCharts === 'function') {
             renderCharts();
+        }
+    }
+    
+    // Re-render summary chart if it exists
+    if (summaryChart && typeof summaryChart.destroy === 'function') {
+        summaryChart.destroy();
+        if (typeof renderSummaryChart === 'function' && summaryData && summaryData[currentAggregation]) {
+            const periods = Object.values(summaryData[currentAggregation]).sort((a, b) => a.period.localeCompare(b.period));
+            renderSummaryChart(periods);
         }
     }
 }

@@ -371,6 +371,7 @@ function createDateGroupHtml(dayGroup) {
                 <div class="date-trades-table">
                     <div class="date-trades-header">
                         <div>Time</div>
+                        <div>Sell Date</div>
                         <div>Contract</div>
                         <div>Position</div>
                         <div>Hold Time</div>
@@ -388,6 +389,7 @@ function createDateGroupHtml(dayGroup) {
 // Create HTML for individual trade within a date group
 function createDateTradeRow(trade) {
     const openTime = trade.Open_Time ? new Date(trade.Open_Time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A';
+    const closeDate = trade.Close_Time ? new Date(trade.Close_Time).toLocaleDateString() : 'N/A';
     const holdTime = trade.Holding_Days || (trade.Holding_Hours ? (parseFloat(trade.Holding_Hours) / 24).toFixed(1) : 0);
     const pnl = parseFloat(trade.Total_Profit) || 0;
     const returnPct = parseFloat(trade.Return_Pct) || 0;
@@ -408,6 +410,7 @@ function createDateTradeRow(trade) {
     return `
         <div class="date-trade-row ${resultClass}">
             <div class="trade-time">${openTime}</div>
+            <div class="trade-time">${closeDate}</div>
             <div class="trade-contract">
                 <div class="contract-name">${contractName}</div>
                 <div class="trade-subtext">${trade.Instrument_Type || 'Stock'}</div>

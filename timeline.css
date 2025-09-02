@@ -419,7 +419,7 @@ body.dark-mode .date-trades-table {
 
 .date-trades-header {
     display: grid;
-    grid-template-columns: 80px 1fr 140px 80px 100px 80px 80px;
+    grid-template-columns: 80px 100 px 1fr 140px 80px 100px 80px 80px;
     gap: 12px;
     padding: 12px 15px;
     background: #e9ecef;
@@ -435,7 +435,7 @@ body.dark-mode .date-trades-header {
 
 .date-trade-row {
     display: grid;
-    grid-template-columns: 80px 1fr 140px 80px 100px 80px 80px;
+    grid-template-columns: 80px 100px 1fr 140px 80px 100px 80px 80px;
     gap: 12px;
     padding: 12px 15px;
     border-bottom: 1px solid #e9ecef;
@@ -570,7 +570,7 @@ body.dark-mode .trade-hold-time {
     
     .date-trades-header,
     .date-trade-row {
-        grid-template-columns: 70px 1fr 120px 70px 90px 70px 70px;
+        grid-template-columns: 70px 100px 1fr 120px 70px 90px 70px 70px;
         gap: 8px;
         font-size: 0.85em;
     }

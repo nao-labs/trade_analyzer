@@ -1,6 +1,6 @@
 // auth.js - Handles API Authentication and Token Management
 
-const AUTH_API_BASE_URL = 'https://152.42.239.83:4000/api';
+const AUTH_API_BASE_URL = 'http://152.42.239.83:4000/api';
 const TOKEN_KEY = 'jwt_token';
 
 /**

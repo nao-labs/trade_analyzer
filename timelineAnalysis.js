@@ -155,6 +155,7 @@ function displayTimelineAnalysis() {
                             <option value="recentFirst" selected>Sort by Most Recent</option>
                             <option value="oldestFirst">Sort by Oldest</option>
                             <option value="pnl">Sort by P&L</option>
+                            <option value="pnl-negative">Sort by P&L (Negative)</option>
                             <option value="trades">Sort by Trade Count</option>
                             <option value="winRate">Sort by Win Rate</option>
                             <option value="symbol">Sort by Symbol</option>
@@ -468,6 +469,10 @@ function sortTimelines() {
     switch (sortBy) {
         case 'pnl':
             sortedTimelines = Object.values(timelineData).sort((a, b) => b.totalPnL - a.totalPnL);
+            break;
+    
+        case 'pnl-negative':
+            sortedTimelines = Object.values(timelineData).sort((a, b) => a.totalPnL - b.totalPnL);
             break;
         case 'trades':
             sortedTimelines = Object.values(timelineData).sort((a, b) => b.totalTrades - a.totalTrades);

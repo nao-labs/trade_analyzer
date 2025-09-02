@@ -6,9 +6,11 @@
     <title>Trading Analysis Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="summary.css">
+    <link rel="stylesheet" href="timeline.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script defer src="dataProcessing.js"></script>
     <script defer src="symbolAnalysis.js"></script>
+    <script defer src="timelineAnalysis.js"></script>
     <script defer src="analytics.js"></script>
     <script defer src="summaryChart.js"></script>
     <script defer src="uiInteractions.js"></script>
@@ -33,6 +35,7 @@
                 <button class="tab-btn active" data-tab="overview">Overview</button>
                 <button class="tab-btn" data-tab="summary">Summary</button>
                 <button class="tab-btn" data-tab="symbols">Symbols</button>
+                <button class="tab-btn" data-tab="timeline">Timeline</button>
                 <button class="tab-btn" data-tab="analytics">Analytics</button>
             </div>
             
@@ -83,6 +86,11 @@
                 <div class="symbols-grid" id="symbolsGrid">
                     <!-- Symbols analysis will be populated here -->
                 </div>
+            </div>
+            
+            <!-- Timeline Tab -->
+            <div class="tab-content" id="timelineTab">
+                <!-- Timeline content will be populated here -->
             </div>
             
             <!-- Analytics Tab -->

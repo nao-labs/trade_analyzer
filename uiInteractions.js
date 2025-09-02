@@ -50,6 +50,10 @@ function showTab(tabName) {
     if (tabName === 'symbols' && allTrades.length > 0) {
         generateSymbolAnalysis();
     }
+    
+    if (tabName === 'timeline' && allTrades.length > 0) {
+        generateTimelineAnalysis();
+    }
 }
 
 function handleDragOver(e) {

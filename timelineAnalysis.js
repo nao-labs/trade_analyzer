@@ -1,7 +1,7 @@
 // Timeline Analysis Component - timelineAnalysis.js
 
 let selectedTimeline = null;
-let timelineData = {};
+window.timelineData = {}; // Attach to the window to make it global
 
 // Main function to generate timeline analysis
 function generateTimelineAnalysis() {
@@ -17,7 +17,7 @@ function generateTimelineAnalysis() {
     console.log(`📊 Processing ${tradesData.length} trades for timeline...`);
     
     // Reset timeline data
-    timelineData = {};
+    window.timelineData = {}; // Also update the global object here
     selectedTimeline = null;
     
     // Process each trade to create symbol-month aggregations
@@ -116,7 +116,7 @@ function generateTimelineAnalysis() {
             Math.abs(losingTrades.reduce((sum, t) => sum + (parseFloat(t.Total_Profit) || 0), 0) / losingTrades.length) : 0;
         
         // Sort trades by date within each timeline entry
-        timelineInfo.trades.sort((a, b) => new Date(b.Open_Time) - new Date(a.Open_Time));
+        timelineInfo.trades.sort((a, b) => new Date(b.Close_Time) - new Date(a.Close_Time));
         
         // Convert tradesByDate Map to sorted array
         timelineInfo.tradesByDateArray = Array.from(timelineInfo.tradesByDate.values())
@@ -141,7 +141,7 @@ function displayTimelineAnalysis() {
     
     // Sort timeline entries by most recent first trade date
     const sortedTimelines = Object.values(timelineData).sort((a, b) => {
-        return b.firstTradeDate - a.firstTradeDate;
+        return b.lastTradeDate - a.lastTradeDate;
     });
     
     timelineTab.innerHTML = `
@@ -232,10 +232,16 @@ function selectTimeline(timelineKey) {
         return;
     }
     
-    // Update title
+    // Update title and add the new analysis button
     const titleElement = document.getElementById('timelineDetailsTitle');
     if (titleElement) {
-        titleElement.textContent = `${timelineInfo.symbol} - ${timelineInfo.monthDisplay}`;
+        // Use innerHTML to add the button
+        titleElement.innerHTML = `
+            <span>${timelineInfo.symbol} - ${timelineInfo.monthDisplay}</span>
+            <button class="context-analysis-btn" onclick="window.initiateTradeContextAnalysis('${timelineKey}')">
+                Analyze Context
+            </button>
+        `;
     }
     
     // Display metrics and trades
@@ -470,7 +476,7 @@ function sortTimelines() {
             sortedTimelines = Object.values(timelineData).sort((a, b) => b.winRate - a.winRate);
             break;
         case 'recentFirst':
-            sortedTimelines = Object.values(timelineData).sort((a, b) => b.firstTradeDate - a.firstTradeDate);
+            sortedTimelines = Object.values(timelineData).sort((a, b) => b.lastTradeDate - a.lastTradeDate);
             break;
         case 'oldestFirst':
             sortedTimelines = Object.values(timelineData).sort((a, b) => a.firstTradeDate - b.firstTradeDate);

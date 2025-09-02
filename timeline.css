@@ -660,3 +660,21 @@ body.dark-mode .trade-hold-time {
         overflow: visible;
     }
 }
+/* In timeline.css, you can add this at the end */
+
+.context-analysis-btn {
+    background-color: #6f42c1;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-left: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.context-analysis-btn:hover {
+    background-color: #5a3d9a;
+}
